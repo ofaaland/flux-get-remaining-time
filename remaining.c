@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 {
 	int rc, remaining;
 	
-	rc = internal_init(1);
+	rc = internal_init(0);
 	if (!rc)
 		die("internal_init failed");
 
