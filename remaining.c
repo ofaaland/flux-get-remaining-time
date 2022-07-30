@@ -34,12 +34,31 @@ int verbosity = 0;
 
 static flux_jobid_t jobid = 0;
 
-#define error printf
-#define debug printf
+void
+error (const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start (ap, fmt);
+    vfprintf (stderr, fmt, ap);
+    va_end (ap);
+}
+
+void
+debug (const char *fmt, ...)
+{
+    va_list ap;
+
+    if (verbosity > 0) {
+        va_start (ap, fmt);
+        vfprintf (stderr, fmt, ap);
+        va_end (ap);
+    }
+}
 
 void die(char *msg)
 {
-	printf("ERROR: %s\n", msg);
+	error("ERROR: %s\n", msg);
 	exit(1);
 }
 
