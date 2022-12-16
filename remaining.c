@@ -64,15 +64,23 @@ void die(char *msg)
 
 int internal_init(int verb)
 {
-	char *jobid_str;
+	const char *jobid_str;
+	flux_t *h = NULL;
 
 	verbosity = verb;
 	jobid_valid = 0;
 
 	if ((jobid_str = getenv("FLUX_JOB_ID")) == NULL) {
-		error("ERROR: FLUX_JOB_ID is not set."
-			  " Remaining time will be a bogus value.\n");
-		return jobid_valid;
+		if (!(h = flux_open(NULL, 0))) {
+			error("ERROR: flux_open() failed with errno %d\n", errno);
+			return jobid_valid;
+		}
+
+		jobid_str = (const char *) flux_attr_get(h, "jobid");
+		if (jobid_str == NULL) {
+			error("ERROR: Unable to obtain flux job ID, errno %d.\n");
+			return jobid_valid;
+		}
 	}
 
 	if (flux_job_id_parse(jobid_str, &jobid) < 0) {
@@ -83,6 +91,7 @@ int internal_init(int verb)
 
 	jobid_valid = 1;
 
+	flux_close(h);
 	return jobid_valid;
 }
 
