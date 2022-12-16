@@ -181,8 +181,8 @@ int internal_get_rem_time(time_t now)
 	}
 
 	remaining_sec = (int) (expiration - time(NULL));
-	debug("flux remaining seconds (from %s) is %ld\n", source, remaining_sec);
-	printf("flux remaining seconds (from %s) is %ld\n", source, remaining_sec);
+	debug("flux remaining seconds (from %s) is %ld sec (%.2f hrs)\n", source, remaining_sec, (double) remaining_sec / 3600);
+	printf("flux remaining seconds (from %s) is %ld sec (%.2f hrs)\n", source, remaining_sec, (double) remaining_sec / 3600);
 
 out:
 	return remaining_sec;
