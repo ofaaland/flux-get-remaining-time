@@ -86,7 +86,7 @@ int internal_init(int verb)
 	return jobid_valid;
 }
 
-static int get_job_expiration(flux_jobid_t id, long int *expiration)
+static int get_job_expiration(flux_jobid_t id, long int *expiration, int *source)
 {
 	flux_t *h = NULL;
 	flux_t *child_handle = NULL;
@@ -122,15 +122,20 @@ static int get_job_expiration(flux_jobid_t id, long int *expiration)
 		}
 
 		debug("No FLUX_KVS_NAMESPACE, querying parent at %s\n", uri);
+		*source = 1;
+	} else {
+		*source = 0;
 	}
 
 	if (!(f = flux_job_list_id(h, jobid, "[\"expiration\"]"))) {
 		error("ERROR: flux_job_list failed with errno %d.\n", errno);
+		*source = -1;
 		goto out;
 	}
 
 	if (flux_rpc_get_unpack (f, "{s:{s:f}}", "job", "expiration", &exp) < 0) {
 		error("ERROR: flux_rpc_get_unpack failed with errno %d.\n", errno);
+		*source = -1;
 		goto out;
 	}
 
@@ -149,19 +154,35 @@ int internal_get_rem_time(time_t now)
 {
 	long int expiration;
 	int remaining_sec = BOGUS_TIME;
+	int from_parent = -1;
+	char *source_strings[3] = {"parent", "child", "unknown"};
+	char *source = NULL;
 
 	if (! jobid_valid) {
 		error("FLUX: No valid jobid to lookup!\n");
 		return BOGUS_TIME;
 	}
 
-	if (get_job_expiration(jobid, &expiration)) {
+	if (get_job_expiration(jobid, &expiration, &from_parent)) {
 		error("FLUX: get_job_expiration failed\n");
 		goto out;
 	}
 
+	switch (from_parent) {
+		case 1:
+			source = source_strings[0];
+			break;
+		case 0:
+			source = source_strings[1];
+			break;
+		case -1:
+			source = source_strings[2];
+			break;
+	}
+
 	remaining_sec = (int) (expiration - time(NULL));
-	debug("flux remaining seconds is %ld\n", remaining_sec);
+	debug("flux remaining seconds (from %s) is %ld\n", source, remaining_sec);
+	printf("flux remaining seconds (from %s) is %ld\n", source, remaining_sec);
 
 out:
 	return remaining_sec;
@@ -189,8 +210,6 @@ int main(int argc, char **argv)
 		die("internal_init failed");
 
 	remaining = internal_get_rem_time(time(NULL));
-
-	printf("remaining time is %d seconds\n", remaining);
 }
 
 /*
