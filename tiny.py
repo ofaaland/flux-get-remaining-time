@@ -6,20 +6,17 @@ from flux.job.JobID import id_parse
 from flux.job.list import get_job
 
 def getjobid(handle):
-  if True:
-    jobid_str = os.environ.get('FLUX_JOB_ID')
-    if jobid_str is None:
-      jobid_str = handle.attr_get('jobid')
+  jobid_str = os.environ.get('FLUX_JOB_ID')
+  if jobid_str is None:
+    jobid_str = handle.attr_get('jobid')
 
-    try:
-      jobid = id_parse(jobid_str)
-    except Exception as e:
-      print(f'id_parse failed with {e}')
-      jobid = None
+  try:
+    jobid = id_parse(jobid_str)
+  except Exception as e:
+    print(f'id_parse failed with {e}')
+    jobid = None
 
-    return handle, jobid
-
-  return None
+  return handle, jobid
 
 def get_scr_end_time(handle, jobid):
   job = get_job(handle, jobid)
