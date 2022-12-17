@@ -7,7 +7,7 @@ import flux.uri
 from flux.job import JobID, JobInfo, JobInfoFormat, JobList
 from flux.util import Tree
 
-if True:
+if False:
   # code from flux-pstree.py
   handle = flux.Flux()
   #size = handle.attr_get("size")
