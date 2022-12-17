@@ -22,4 +22,4 @@ else:
   print(f'handle is {handle}')
   parenturi = handle.attr_get('parent-uri')
   print(f'parenturi is {parenturi}')
-  parent = handle.Flux(parenturi)
+  parent = flux.Flux(parenturi)
