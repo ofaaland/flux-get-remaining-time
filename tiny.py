@@ -4,6 +4,9 @@ import os, re
 import flux
 from flux.job.JobID import id_parse
 from flux.job.list import get_job
+import flux.uri
+from flux.job import JobID, JobInfo, JobInfoFormat, JobList
+from flux.util import Tree
 
 def in_job_context(handle, jobid_str):
   try:
@@ -14,9 +17,9 @@ def in_job_context(handle, jobid_str):
   return handle, jobid
 
 def in_system_context(handle):
-    jobid_str = handle.attr_get('jobid')
-    print(f'got jobid_str {jobid_str} via attr_get')
-    return None, None
+    jobid = JobID(handle.attr_get("jobid"))
+    parent = flux.Flux(handle.attr_get("parent-uri"))
+    return parent, jobid
 
 def getjobid(handle):
   jobid_str = os.environ.get('FLUX_JOB_ID')
@@ -34,10 +37,10 @@ def get_scr_end_time(handle, jobid):
     expiration = 0
   return expiration
 
-flux = flux.Flux()
+handle = flux.Flux()
 print(f'flux is {flux}')
 
-handle, jobid = getjobid(flux)
+handle, jobid = getjobid(handle)
 print(f'flux jobid: {jobid}')
 
 end_time = get_scr_end_time(handle, jobid)
